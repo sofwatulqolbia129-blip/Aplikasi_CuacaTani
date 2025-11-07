@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CuacaTani — 8 Jenis Tanaman</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+:root {
+  --green: #2e8b57;
+  --light: #f9fdfb;
+  --dark: #1e3d2a;
+  --accent: #37b27a;
+}
+body {
+  margin: 0;
+  font-family: "Poppins", "Segoe UI", sans-serif;
+  background: var(--light);
+  color: var(--dark);
+  overflow-x: hidden;
+}
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--green);
+  color: white;
+  padding: 14px 20px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 999;
+}
+main {
+  margin-top: 70px;
+  margin-bottom: 80px;
+  padding: 16px;
+}
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin-bottom: 16px;
+}
+.card h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: var(--dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn {
+  background: var(--green);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: 500;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn:hover { background: #257d4f; }
+.btn.secondary {
+  background: #0078d7;
+}
+.btn.secondary:hover {
+  background: #005fa3;
+}
+.btn.small {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+section {
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+section.active {
+  display: block;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 70px;
+  padding: 0 10px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.15);
+  z-index: 1000;
+}
+nav button {
+  background: none;
+  border: none;
+  text-align: center;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 6px 0;
+  transition: all 0.3s ease;
+  color: #555;
+  flex: 1;
+}
+nav button span {
+  font-size: 24px;
+  margin-bottom: 2px;
+  transition: transform 0.3s ease;
+}
+nav button.active {
+  color: var(--accent);
+}
+nav button.active span {
+  transform: translateY(-5px) scale(1.2);
+}
+.button-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.button-group .btn {
+  flex: 1;
+  min-width: 120px;
+  justify-content: center;
+}
+#map {
+  height: 300px;
+  width: 100%;
+  border-radius: 12px;
+}
+.leaflet-control-custom {
+  background: white;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  max-width: 280px;
+}
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#searchLocation {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.state-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.state-item:last-child {
+  border-bottom: none;
+}
+.state-label {
+  color: #666;
+  font-size: 13px;
+}
+.state-value {
+  color: var(--dark);
+  font-weight: 500;
+  font-size: 13px;
+  text-align: right;
+}
+.form-group {
+  margin-bottom: 12px;
+}
+.form-group label {
+  display: block;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+}
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+.weather-info {
+  line-height: 1.6;
+}
+.weather-location {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.weather-details {
+  display: grid;
+  gap: 8px;
+}
+.weather-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+.weather-label {
+  color: #666;
+  font-size: 14px;
+}
+.weather-value {
+  color: var(--dark);
+  font-weight: 500;
+  font-size: 14px;
+}
+.location-info {
+  font-size: 13px;
+  color: #555;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+.location-text {
+  font-weight: 500;
+  color: var(--dark);
+}
+.history-item {
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 12px;
+  color: #666;
+}
+.location-status {
+  padding: 8px;
+  border-radius: 8px;
+  margin: 8px 0;
+  font-size: 13px;
+  text-align: center;
+}
+.location-success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+.location-warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+.plant-item {
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin: 8px 0;
+  background: #f8f9fa;
+}
+.plant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.plant-name {
+  font-weight: 600;
+  color: var(--dark);
+}
+.plant-status {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.status-growing {
+  background: #d4edda;
+  color: #155724;
+}
+.status-harvested {
+  background: #fff3cd;
+  color: #856404;
+}
+.harvest-form {
+  margin-top: 8px;
+  padding: 8px;
+  background: white;
+  border-radius: 6px;
+}
+
+/* ⭐ FOOTER BARU YANG BAGUS */
+.footer {
+  background: linear-gradient(135deg, var(--green) 0%, var(--dark) 100%);
+  color: white;
+  text-align: center;
+  padding: 20px 16px;
+  margin-top: 30px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+}
+
+.footer-content {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.footer p {
+  margin: 8px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.footer-link {
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+.footer-copyright {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+}
+</style>
+</head>
+<body>
+
+<header>🌾 CuacaTani — 8 Jenis Tanaman</header>
+
+<main>
+  <!-- CUACA -->
+  <section id="cuaca" class="active">
+    <div class="card">
+      <h3>🌤 Informasi Cuaca</h3>
+      <div id="weather" class="weather-info">
+        <div class="weather-location">📍 Memuat cuaca Bangil...</div>
+      </div>
+      <button class="btn" id="btnWeather">
+        <span>🔄</span> Perbarui Cuaca
+      </button>
+    </div>
+
+    <!-- MAP -->
+    <div class="card">
+      <h3>🗺 Peta Lokasi</h3>
+      <div id="locationStatus" class="location-status location-success">
+        ✅ Lokasi: Bangil, Pasuruan
+      </div>
+      <div id="map"></div>
+      
+      <div class="button-group">
+        <button class="btn" id="btnSetLocation">
+          <span>💾</span> Simpan Lokasi
+        </button>
+        <button class="btn secondary" id="btnGetLocation">
+          <span>📍</span> Lokasi Saya
+        </button>
+      </div>
+      
+      <div class="location-info">
+        Lokasi saat ini: <span id="locText" class="location-text">Bangil, Pasuruan</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>📋 Riwayat Cuaca</h4>
+      <div id="history"></div>
+    </div>
+  </section>
+
+  <!-- JADWAL & TANAMAN -->
+  <section id="jadwal">
+    <!-- TAMBAH TANAMAN BARU -->
+    <div class="card">
+      <h3>🌱 Tambah Tanaman Baru</h3>
+      
+      <div class="form-group">
+        <label for="plantType">Jenis Tanaman:</label>
+        <select id="plantType">
+          <option value="">Pilih Jenis Tanaman</option>
+          <option value="cabe">Cabe Rawit (90 hari)</option>
+          <option value="tomat">Tomat (80 hari)</option>
+          <option value="terong">Terong (85 hari)</option>
+          <option value="kangkung">Kangkung (30 hari)</option>
+          <option value="bayam">Bayam (25 hari)</option>
+          <option value="sawi">Sawi (40 hari)</option>
+          <option value="wortel">Wortel (70 hari)</option>
+          <option value="kol">Kol/Kubis (75 hari)</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="quantity">Jumlah Tanaman:</label>
+        <input type="number" id="quantity" placeholder="Contoh: 50">
+      </div>
+      
+      <div class="form-group">
+        <label for="datePlanted">Tanggal Tanam:</label>
+        <input type="date" id="datePlanted">
+      </div>
+      
+      <div class="form-group">
+        <label for="targetHarvest">Target Hasil Panen:</label>
+        <input type="text" id="targetHarvest" placeholder="Contoh: 5 kg, 100 buah">
+      </div>
+      
+      <button class="btn" id="btnAddPlant">
+        <span>🌿</span> Tambah Tanaman
+      </button>
+    </div>
+
+    <!-- DAFTAR TANAMAN AKTIF -->
+    <div class="card">
+      <h3>🌿 Tanaman Aktif</h3>
+      <div id="plantsList">
+        <div class="state-item">
+          <span class="state-label">Memuat tanaman...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEST NOTIFIKASI -->
+    <div class="card">
+      <h3>⏰ Test Notifikasi</h3>
+      <div class="button-group">
+        <button class="btn secondary small" id="btnTestWeatherMorning">
+          <span>🌅</span> Cuaca Pagi
+        </button>
+        <button class="btn secondary small" id="btnTestWeatherAfternoon">
+          <span>☀</span> Cuaca Siang
+        </button>
+        <button class="btn secondary small" id="btnTestWater">
+          <span>💧</span> Penyiraman
+        </button>
+      </div>
+      <div style="margin-top: 8px; font-size: 12px; color: #666;">
+        💡 Notifikasi otomatis: Cuaca (07:00 & 14:00), Penyiraman (07:00 & 13:30)
+      </div>
+    </div>
+  </section>
+
+  <!-- TENTANG -->
+  <section id="tentang">
+    <div class="card">
+      <h3>ℹ Tentang Aplikasi</h3>
+      <p><b>CuacaTani Bangil</b> adalah aplikasi manajemen pertanian modern untuk 8 jenis tanaman.</p>
+      
+      <p><b>🌿 8 Jenis Tanaman yang Didukung:</b></p>
+      <ul style="margin: 8px 0; padding-left: 20px; font-size: 14px; color: #666;">
+        <li><b>Cabe Rawit</b> - 90 hari panen</li>
+        <li><b>Tomat</b> - 80 hari panen</li>
+        <li><b>Terong</b> - 85 hari panen</li>
+        <li><b>Kangkung</b> - 30 hari panen</li>
+        <li><b>Bayam</b> - 25 hari panen</li>
+        <li><b>Sawi</b> - 40 hari panen</li>
+        <li><b>Wortel</b> - 70 hari panen</li>
+        <li><b>Kol/Kubis</b> - 75 hari panen</li>
+      </ul>
+      
+      <p><b>📊 Fitur Manajemen:</b></p>
+      <ul style="margin: 8px 0; padding-left: 20px; font-size: 14px; color: #666;">
+        <li>📅 Tracking tanggal tanam & panen</li>
+        <li>🎯 Setting target hasil panen</li>
+        <li>📈 Pencatatan hasil aktual</li>
+        <li>⏰ Notifikasi otomatis</li>
+        <li>🗺️ Map lokasi kebun</li>
+      </ul>
+      
+      <p><b>⏰ Notifikasi Otomatis:</b></p>
+      <ul style="margin: 8px 0; padding-left: 20px; font-size: 14px; color: #666;">
+        <li>🌅 07:00 - Laporan cuaca pagi + tips</li>
+        <li>☀ 14:00 - Laporan cuaca siang + monitoring</li>
+        <li>💧 07:00 & 13:30 - Pengingat penyiraman</li>
+        <li>🌾 Otomatis - Pengingat jadwal panen</li>
+        <li>📊 Otomatis - Laporan hasil panen</li>
+      </ul>
+    </div>
+
+    <!-- ⭐ FOOTER BARU YANG BAGUS -->
+    <div class="footer">
+      <div class="footer-content">
+        <p><strong>🌾 CuacaTani Bangil</strong></p>
+        <p>Sistem Manajemen Pertanian Modern untuk 8 Jenis Tanaman</p>
+        
+        <div class="footer-links">
+          <a href="#" class="footer-link">📱 Telegram Bot</a>
+          <a href="#" class="footer-link">🌤 Cuaca Real-time</a>
+          <a href="#" class="footer-link">📊 Dashboard</a>
+        </div>
+        
+        <div class="footer-copyright">
+          © 2025 CuacaTani Bangil | Manajemen 8 Jenis Tanaman | All rights reserved
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- NAVIGATION -->
+<nav>
+  <button class="active" data-tab="cuaca"><span>🌤</span>Cuaca</button>
+  <button data-tab="jadwal"><span>🌿</span>Tanaman</button>
+  <button data-tab="tentang"><span>ℹ</span>Tentang</button>
+</nav>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+// ========= Navigation =========
+const tabs = document.querySelectorAll("nav button");
+const sections = document.querySelectorAll("main section");
+tabs.forEach(btn => {
+  btn.addEventListener("click", () => {
+    tabs.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    const target = btn.getAttribute("data-tab");
+    sections.forEach(s => s.classList.remove("active"));
+    document.getElementById(target).classList.add("active");
+  });
+});
+
+// ========= Endpoints =========
+const endpoints = {
+  weather: "/api/weather",
+  state: "/api/state",
+  plantTypes: "/api/plant_types",
+  addPlant: "/api/add_plant",
+  harvestPlant: "/api/harvest_plant",
+  force: "/api/force_notify",
+  setLocation: "/api/set_location"
+};
+
+let historyLog = [];
+let map, marker;
+
+// ====== Initialize Map ======
+function initMap() {
+  const bangilLat = -7.5995;
+  const bangilLon = 112.8186;
+  
+  map = L.map('map').setView([bangilLat, bangilLon], 14);
+  
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+
+  marker = L.marker([bangilLat, bangilLon], { 
+    draggable: true,
+    title: "Bangil, Pasuruan"
+  }).addTo(map);
+
+  marker.bindPopup("<b>Bangil, Pasuruan</b><br>Lokasi kebun").openPopup();
+
+  marker.on('dragend', function(e) {
+    const pos = marker.getLatLng();
+    document.getElementById("locText").innerText = 
+      `Drag marker: ${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)}`;
+  });
+}
+
+// ====== Plant Management ======
+async function loadPlants() {
+  const plantsList = document.getElementById('plantsList');
+  
+  try {
+    const response = await fetch(endpoints.state);
+    const data = await response.json();
+    
+    const growingPlants = data.plants?.filter(p => p.status === 'growing') || [];
+    
+    if (growingPlants.length === 0) {
+      plantsList.innerHTML = '<div class="state-item"><span class="state-label">Belum ada tanaman aktif</span></div>';
+      return;
+    }
+    
+    plantsList.innerHTML = growingPlants.map(plant => `
+      <div class="plant-item">
+        <div class="plant-header">
+          <span class="plant-name">${plant.name}</span>
+          <span class="plant-status status-growing">Sedang Tumbuh</span>
+        </div>
+        <div class="state-item">
+          <span class="state-label">Jumlah:</span>
+          <span class="state-value">${plant.quantity} tanaman</span>
+        </div>
+        <div class="state-item">
+          <span class="state-label">Tanggal Tanam:</span>
+          <span class="state-value">${plant.date_planted}</span>
+        </div>
+        <div class="state-item">
+          <span class="state-label">Target Panen:</span>
+          <span class="state-value">${plant.target_harvest}</span>
+        </div>
+        <div class="state-item">
+          <span class="state-label">Perkiraan Panen:</span>
+          <span class="state-value">${plant.harvest_date}</span>
+        </div>
+        <div class="harvest-form">
+          <input type="text" id="harvestAmount-${plant.id}" placeholder="Hasil panen (contoh: 4.5 kg)" 
+                 style="width: 100%; padding: 6px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 4px;">
+          <button class="btn small" onclick="harvestPlant(${plant.id})" style="width: 100%">
+            <span>🌾</span> Catat Panen
+          </button>
+        </div>
+      </div>
+    `).join('');
+    
+  } catch (error) {
+    plantsList.innerHTML = '<div class="state-item"><span class="state-label">❌ Gagal memuat tanaman</span></div>';
+  }
+}
+
+async function addPlant() {
+  const plantType = document.getElementById('plantType').value;
+  const quantity = document.getElementById('quantity').value;
+  const datePlanted = document.getElementById('datePlanted').value;
+  const targetHarvest = document.getElementById('targetHarvest').value;
+  
+  if (!plantType || !quantity || !datePlanted || !targetHarvest) {
+    alert('Harap lengkapi semua data tanaman!');
+    return;
+  }
+  
+  const btn = document.getElementById('btnAddPlant');
+  
+  try {
+    btn.innerHTML = '<span class="loading"></span> Menambahkan...';
+    btn.disabled = true;
+    
+    const body = new URLSearchParams();
+    body.append("plant_type", plantType);
+    body.append("quantity", quantity);
+    body.append("date_planted", datePlanted);
+    body.append("target_harvest", targetHarvest);
+    
+    const response = await fetch(endpoints.addPlant, {
+      method: "POST",
+      body: body
+    });
+    
+    const data = await response.json();
+    
+    if (data.status === "ok") {
+      alert('✅ Tanaman berhasil ditambahkan! Notifikasi terkirim ke Telegram.');
+      
+      // Reset form
+      document.getElementById('plantType').value = '';
+      document.getElementById('quantity').value = '';
+      document.getElementById('datePlanted').value = '';
+      document.getElementById('targetHarvest').value = '';
+      
+      // Reload plants list
+      loadPlants();
+    } else {
+      alert('❌ Gagal: ' + (data.error || 'Unknown error'));
+    }
+  } catch (error) {
+    alert('❌ Error: ' + error.message);
+  } finally {
+    btn.innerHTML = '<span>🌿</span> Tambah Tanaman';
+    btn.disabled = false;
+  }
+}
+
+async function harvestPlant(plantId) {
+  const harvestAmount = document.getElementById(`harvestAmount-${plantId}`).value;
+  
+  if (!harvestAmount) {
+    alert('Harap masukkan hasil panen!');
+    return;
+  }
+  
+  try {
+    const body = new URLSearchParams();
+    body.append("plant_id", plantId);
+    body.append("harvest_amount", harvestAmount);
+    
+    const response = await fetch(endpoints.harvestPlant, {
+      method: "POST",
+      body: body
+    });
+    
+    const data = await response.json();
+    
+    if (data.status === "ok") {
+      alert('✅ Panen berhasil dicatat! Notifikasi terkirim ke Telegram.');
+      loadPlants();
+    } else {
+      alert('❌ Gagal: ' + (data.error || 'Unknown error'));
+    }
+  } catch (error) {
+    alert('❌ Error: ' + error.message);
+  }
+}
+
+// ====== Core Functions ======
+async function getWeather() {
+  const box = document.getElementById("weather");
+  const btn = document.getElementById("btnWeather");
+  
+  try {
+    btn.innerHTML = '<span class="loading"></span> Memuat...';
+    btn.disabled = true;
+    
+    box.innerHTML = '<div class="weather-location"><span>📍</span> Mengambil data cuaca Bangil...</div>';
+    
+    const response = await fetch(endpoints.weather);
+    const data = await response.json();
+    
+    if (data.error) {
+      box.innerHTML = `
+        <div class="weather-location">
+          <span>❌</span> Gagal memuat cuaca
+        </div>
+      `;
+      return;
+    }
+    
+    // ⭐ TAMBAH "TERASA SEPERTI" DI SINI
+    box.innerHTML = `
+      <div class="weather-location">
+        <span>📍</span> ${data.location}
+      </div>
+      <div class="weather-details">
+        <div class="weather-item">
+          <span class="weather-label">🌡 Suhu:</span>
+          <span class="weather-value">${data.temp_c}°C</span>
+        </div>
+        <div class="weather-item">
+          <span class="weather-label">🌡 Terasa Seperti:</span>
+          <span class="weather-value">${data.feelslike_c}°C</span>
+        </div>
+        <div class="weather-item">
+          <span class="weather-label">💧 Kelembaban:</span>
+          <span class="weather-value">${data.humidity}%</span>
+        </div>
+        <div class="weather-item">
+          <span class="weather-label">🌬 Angin:</span>
+          <span class="weather-value">${data.wind_kph} km/jam</span>
+        </div>
+        <div class="weather-item">
+          <span class="weather-label">☁ Kondisi:</span>
+          <span class="weather-value">${data.condition}</span>
+        </div>
+      </div>
+    `;
+    
+    // Update history
+    const now = new Date().toLocaleString('id-ID');
+    historyLog.unshift(`${now} - ${data.temp_c}°C - ${data.condition}`);
+    if (historyLog.length > 5) historyLog.pop();
+    
+    const historyElement = document.getElementById("history");
+    historyElement.innerHTML = historyLog.map(item => 
+      `<div class="history-item">${item}</div>`
+    ).join('');
+    
+  } catch (e) {
+    box.innerHTML = `
+      <div class="weather-location">
+        <span>❌</span> Gagal mengambil cuaca
+      </div>
+    `;
+  } finally {
+    btn.innerHTML = '<span>🔄</span> Perbarui Cuaca';
+    btn.disabled = false;
+  }
+}
+
+// ====== Location Functions ======
+function getUserLocation() {
+  const statusDiv = document.getElementById('locationStatus');
+  
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      statusDiv.innerHTML = '<div class="location-status location-error">❌ Browser tidak support GPS</div>';
+      resolve(null);
+      return;
+    }
+    
+    statusDiv.innerHTML = '<div class="location-status location-warning">📍 Mendeteksi lokasi Anda...</div>';
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        
+        statusDiv.innerHTML = '<div class="location-status location-success">✅ Lokasi Anda ditemukan via GPS</div>';
+        
+        map.setView([lat, lon], 16);
+        marker.setLatLng([lat, lon]);
+        marker.bindPopup("<b>Lokasi Anda</b>").openPopup();
+        
+        document.getElementById("locText").innerText = `Lokasi GPS: ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+        
+        resolve({ lat, lon });
+      },
+      (error) => {
+        statusDiv.innerHTML = '<div class="location-status location-error">❌ Gagal detect lokasi GPS</div>';
+        resolve(null);
+      }
+    );
+  });
+}
+
+async function saveLocation() {
+  const pos = marker.getLatLng();
+  const btn = document.getElementById("btnSetLocation");
+  
+  try {
+    btn.innerHTML = '<span class="loading"></span> Menyimpan...';
+    btn.disabled = true;
+    
+    const body = new URLSearchParams();
+    body.append("lat", pos.lat);
+    body.append("lon", pos.lng);
+    
+    const response = await fetch('/api/set_location', {
+      method: "POST",
+      body: body
+    });
+    
+    const data = await response.json();
+    
+    if (data.status === "ok") {
+      document.getElementById("locText").innerText = data.location_name;
+      document.getElementById("locationStatus").innerHTML = 
+        `<div class="location-status location-success">✅ Lokasi disimpan: ${data.location_name}</div>`;
+    }
+  } catch (error) {
+    alert("❌ Gagal menyimpan lokasi");
+  } finally {
+    btn.innerHTML = '<span>💾</span> Simpan Lokasi';
+    btn.disabled = false;
+  }
+}
+
+async function forceNotify(type) {
+  const body = new URLSearchParams();
+  body.append("type", type);
+  
+  try {
+    const response = await fetch(endpoints.force, {
+      method: "POST",
+      body: body
+    });
+    
+    const data = await response.json();
+    
+    if (data.sent) {
+      alert("✅ Notifikasi test terkirim ke Telegram!");
+    } else {
+      alert("❌ Gagal mengirim notifikasi test");
+    }
+  } catch (e) {
+    alert("❌ Error: " + e.message);
+  }
+}
+
+// ====== Event Listeners ======
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize map with Bangil location
+  initMap();
+  
+  // Load initial data
+  getWeather();
+  loadPlants();
+  
+  // Set current date as default for planting
+  document.getElementById('datePlanted').value = new Date().toISOString().split('T')[0];
+  
+  // Set up event listeners
+  document.getElementById("btnWeather").onclick = getWeather;
+  document.getElementById("btnAddPlant").onclick = addPlant;
+  document.getElementById("btnSetLocation").onclick = saveLocation;
+  document.getElementById("btnGetLocation").onclick = getUserLocation;
+  
+  document.getElementById("btnTestWeatherMorning").onclick = () => forceNotify("weather_morning");
+  document.getElementById("btnTestWeatherAfternoon").onclick = () => forceNotify("weather_afternoon");
+  document.getElementById("btnTestWater").onclick = () => forceNotify("water");
+});
+
+// Auto-refresh
+setInterval(() => {
+  getWeather();
+  loadPlants();
+}, 10 * 60 * 1000);
+</script>
+</body>
+</html>
