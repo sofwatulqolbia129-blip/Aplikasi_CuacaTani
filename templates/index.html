@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>CuacaTani — Aplikasi Pintar Cuaca & Tanam</title>
+<title>CuacaTani — 8 Jenis Tanaman</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <style>
 :root {
@@ -372,7 +372,7 @@ nav button.active span {
 </head>
 <body>
 
-<header>🌾 CuacaTani — Aplikasi Pintar Cuaca & Tanam</header>
+<header>🌾 CuacaTani — 8 Jenis Tanaman</header>
 
 <main>
   <!-- CUACA -->
@@ -510,7 +510,7 @@ nav button.active span {
         <li>🎯 Setting target hasil panen</li>
         <li>📈 Pencatatan hasil aktual</li>
         <li>⏰ Notifikasi otomatis</li>
-        <li>🗺️ Map lokasi kebun</li>
+        <li>🗺 Map lokasi kebun</li>
       </ul>
       
       <p><b>⏰ Notifikasi Otomatis:</b></p>
@@ -536,7 +536,7 @@ nav button.active span {
         </div>
         
         <div class="footer-copyright">
-          © 2025 CuacaTani | Aplikasi Pintar untuk Petani hebat
+          © 2025 CuacaTani Bangil | Manajemen 8 Jenis Tanaman | All rights reserved
         </div>
       </div>
     </div>
@@ -600,7 +600,7 @@ function initMap() {
   marker.on('dragend', function(e) {
     const pos = marker.getLatLng();
     document.getElementById("locText").innerText = 
-      `Drag marker: ${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)}`;
+      Drag marker: ${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)};
   });
 }
 
@@ -709,7 +709,7 @@ async function addPlant() {
 }
 
 async function harvestPlant(plantId) {
-  const harvestAmount = document.getElementById(`harvestAmount-${plantId}`).value;
+  const harvestAmount = document.getElementById(harvestAmount-${plantId}).value;
   
   if (!harvestAmount) {
     alert('Harap masukkan hasil panen!');
@@ -793,12 +793,12 @@ async function getWeather() {
     
     // Update history
     const now = new Date().toLocaleString('id-ID');
-    historyLog.unshift(`${now} - ${data.temp_c}°C - ${data.condition}`);
+    historyLog.unshift(${now} - ${data.temp_c}°C - ${data.condition});
     if (historyLog.length > 5) historyLog.pop();
     
     const historyElement = document.getElementById("history");
     historyElement.innerHTML = historyLog.map(item => 
-      `<div class="history-item">${item}</div>`
+      <div class="history-item">${item}</div>
     ).join('');
     
   } catch (e) {
@@ -837,7 +837,7 @@ function getUserLocation() {
         marker.setLatLng([lat, lon]);
         marker.bindPopup("<b>Lokasi Anda</b>").openPopup();
         
-        document.getElementById("locText").innerText = `Lokasi GPS: ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+        document.getElementById("locText").innerText = Lokasi GPS: ${lat.toFixed(4)}, ${lon.toFixed(4)};
         
         resolve({ lat, lon });
       },
@@ -871,7 +871,7 @@ async function saveLocation() {
     if (data.status === "ok") {
       document.getElementById("locText").innerText = data.location_name;
       document.getElementById("locationStatus").innerHTML = 
-        `<div class="location-status location-success">✅ Lokasi disimpan: ${data.location_name}</div>`;
+        <div class="location-status location-success">✅ Lokasi disimpan: ${data.location_name}</div>;
     }
   } catch (error) {
     alert("❌ Gagal menyimpan lokasi");
